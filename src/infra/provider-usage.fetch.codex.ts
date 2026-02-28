@@ -65,7 +65,14 @@ export async function fetchCodexUsage(
   if (data.rate_limit?.secondary_window) {
     const sw = data.rate_limit.secondary_window;
     const windowHours = Math.round((sw.limit_window_seconds || 86400) / 3600);
-    const label = windowHours >= 168 ? "Week" : windowHours >= 24 ? "Day" : `${windowHours}h`;
+    // openai-codex secondary_window is always weekly despite limit_window_seconds
+    // See: https://github.com/openclaw/openclaw/issues/29783
+    const label =
+      windowHours >= 168
+        ? "Week"
+        : windowHours >= 24
+          ? "Weekly"
+          : `${windowHours}h`;
     windows.push({
       label,
       usedPercent: clampPercent(sw.used_percent || 0),
