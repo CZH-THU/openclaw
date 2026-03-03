@@ -22,6 +22,7 @@ export type DiscordGuildEntryResolved = {
   id?: string;
   slug?: string;
   requireMention?: boolean;
+  omitMessageMetadata?: boolean;
   reactionNotifications?: "off" | "own" | "all" | "allowlist";
   users?: string[];
   roles?: string[];
@@ -34,6 +35,7 @@ export type DiscordGuildEntryResolved = {
       enabled?: boolean;
       users?: string[];
       roles?: string[];
+      omitMessageMetadata?: boolean;
       systemPrompt?: string;
       includeThreadStarter?: boolean;
       autoThread?: boolean;
@@ -48,6 +50,7 @@ export type DiscordChannelConfigResolved = {
   enabled?: boolean;
   users?: string[];
   roles?: string[];
+  omitMessageMetadata?: boolean;
   systemPrompt?: string;
   includeThreadStarter?: boolean;
   autoThread?: boolean;
@@ -393,6 +396,7 @@ function resolveDiscordChannelConfigEntry(
     enabled: entry.enabled,
     users: entry.users,
     roles: entry.roles,
+    omitMessageMetadata: entry.omitMessageMetadata,
     systemPrompt: entry.systemPrompt,
     includeThreadStarter: entry.includeThreadStarter,
     autoThread: entry.autoThread,
