@@ -22,6 +22,7 @@ export type DiscordGuildEntryResolved = {
   id?: string;
   slug?: string;
   requireMention?: boolean;
+  ignoreOtherMentions?: boolean;
   omitMessageMetadata?: boolean;
   reactionNotifications?: "off" | "own" | "all" | "allowlist";
   users?: string[];

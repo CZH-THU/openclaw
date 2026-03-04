@@ -61,6 +61,11 @@ export type DiscordReactionNotificationMode = "off" | "own" | "all" | "allowlist
 export type DiscordGuildEntry = {
   slug?: string;
   requireMention?: boolean;
+  /**
+   * If true, drop messages that mention another user/role but not this one (not @everyone/@here).
+   * Default: false.
+   */
+  ignoreOtherMentions?: boolean;
   /** If true, omit per-message untrusted metadata blocks for this guild (channel override wins). */
   omitMessageMetadata?: boolean;
   /** Optional tool policy overrides for this guild (used when channel override is missing). */
