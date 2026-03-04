@@ -479,7 +479,7 @@ export async function prepareSlackMessage(params: {
     requireMention: Boolean(shouldRequireMention),
     canDetectMention,
     wasMentioned,
-    implicitMention,
+    implicitMention: shouldRequireMention ? false : implicitMention,
     hasAnyMention,
     allowTextCommands,
     hasControlCommand: hasControlCommandInMessage,
