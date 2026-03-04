@@ -152,10 +152,10 @@ workspace lives).
 ### 1) Initialize the repo
 
 If git is installed, brand-new workspaces are initialized automatically. If this
-workspace is not already a repo, run:
+workspace is not already a repo, run (replace `main` with your agentId if needed):
 
 ```bash
-cd ~/.openclaw/workspace
+cd ~/.openclaw/workspace/main
 git init
 git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md HEARTBEAT.md memory/
 git commit -m "Add agent workspace"
