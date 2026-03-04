@@ -31,7 +31,12 @@ inside a sandbox workspace under `~/.openclaw/sandboxes`, not your host workspac
 ```json5
 {
   agent: {
-    workspace: "~/.openclaw/workspace",
+    // Recommended: keep workspaces under the shared workspace root
+    // so media/file tools stay within the default security whitelist.
+    // For example:
+    //   "~/.openclaw/workspace/main"
+    //   "~/.openclaw/workspace/code"
+    workspace: "~/.openclaw/workspace/main",
   },
 }
 ```
@@ -50,7 +55,8 @@ file creation:
 
 ## Extra workspace folders
 
-Older installs may have created `~/openclaw`. Keeping multiple workspace
+Older installs may have created `~/openclaw` or additional `workspace-*`
+directories next to the default workspace root. Keeping multiple workspace
 directories around can cause confusing auth or state drift, because only one
 workspace is active at a time.
 
