@@ -657,7 +657,8 @@ function mergeCronPayload(existing: CronPayload, patch: CronPayloadPatch): CronP
       return buildPayloadFromPatch(patch);
     }
     const text = typeof patch.text === "string" ? patch.text : existing.text;
-    return { kind: "systemEvent", text };
+    const model = typeof patch.model === "string" ? patch.model : existing.model;
+    return { kind: "systemEvent", text, ...(model ? { model } : {}) };
   }
 
   if (existing.kind !== "agentTurn") {
@@ -744,7 +745,8 @@ function buildPayloadFromPatch(patch: CronPayloadPatch): CronPayload {
     if (typeof patch.text !== "string" || patch.text.length === 0) {
       throw new Error('cron.update payload.kind="systemEvent" requires text');
     }
-    return { kind: "systemEvent", text: patch.text };
+    const model = typeof patch.model === "string" ? patch.model : undefined;
+    return { kind: "systemEvent", text: patch.text, ...(model ? { model } : {}) };
   }
 
   if (typeof patch.message !== "string" || patch.message.length === 0) {

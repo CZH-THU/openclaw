@@ -620,7 +620,44 @@ export async function runHeartbeatOnce(opts: {
   const agentId = normalizeAgentId(
     explicitAgentId || forcedSessionAgentId || resolveDefaultAgentId(cfg),
   );
-  const heartbeat = opts.heartbeat ?? resolveHeartbeatConfig(cfg, agentId);
+  let heartbeat = opts.heartbeat ?? resolveHeartbeatConfig(cfg, agentId);
+  
+  // Extract model override from cron system event contextKey if present.
+  // Format: "cron:${jobId}:model:${base64EncodedModel}"
+  // This supports wakeMode="next-heartbeat" jobs that encode model in contextKey.
+  // Base64 encoding preserves case sensitivity since normalizeContextKey lowercases
+  // the entire contextKey string. Match by job ID from reason to ensure we use
+  // the model from the job that actually triggered this heartbeat.
+  if (!heartbeat?.model && opts.sessionKey && opts.reason) {
+    const reasonJobIdMatch = opts.reason.match(/^cron:(.+)$/);
+    if (reasonJobIdMatch) {
+      const triggerJobId = reasonJobIdMatch[1];
+      const pendingEvents = peekSystemEventEntries(opts.sessionKey);
+      for (const event of pendingEvents) {
+        const contextKey = event.contextKey;
+        // Match contextKey that starts with the triggering job's ID to ensure
+        // we use the correct model when multiple jobs are queued for the same session.
+        if (
+          typeof contextKey === "string" &&
+          contextKey.startsWith(`cron:${triggerJobId}:model:`)
+        ) {
+          const modelMatch = contextKey.match(/:model:(.+)$/);
+          if (modelMatch) {
+            try {
+              const decodedModel = Buffer.from(modelMatch[1], "base64").toString("utf-8");
+              if (decodedModel && decodedModel.trim()) {
+                heartbeat = { ...heartbeat, model: decodedModel.trim() };
+                break;
+              }
+            } catch {
+              // Invalid base64 encoding, ignore
+            }
+          }
+        }
+      }
+    }
+  }
+  
   if (!areHeartbeatsEnabled()) {
     return { status: "skipped", reason: "disabled" };
   }

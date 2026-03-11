@@ -78,9 +78,13 @@ export type CronFailureAlert = {
   accountId?: string;
 };
 
-export type CronPayload = { kind: "systemEvent"; text: string } | CronAgentTurnPayload;
+export type CronPayload =
+  | { kind: "systemEvent"; text: string; model?: string }
+  | CronAgentTurnPayload;
 
-export type CronPayloadPatch = { kind: "systemEvent"; text?: string } | CronAgentTurnPayloadPatch;
+export type CronPayloadPatch =
+  | { kind: "systemEvent"; text?: string; model?: string }
+  | CronAgentTurnPayloadPatch;
 
 type CronAgentTurnPayloadFields = {
   message: string;

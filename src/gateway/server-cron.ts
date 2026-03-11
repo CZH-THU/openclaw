@@ -242,6 +242,9 @@ export function buildGatewayCronService(params: {
         agentId,
         requestedSessionKey: opts?.sessionKey,
       });
+      // Note: opts.model is accepted but not used here. For wakeMode="now",
+      // model override is passed via heartbeat config. For wakeMode="next-heartbeat",
+      // model is encoded in contextKey and extracted by heartbeat runner.
       enqueueSystemEvent(text, { sessionKey, contextKey: opts?.contextKey });
     },
     requestHeartbeatNow: (opts) => {

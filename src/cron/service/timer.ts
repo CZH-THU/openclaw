@@ -1054,16 +1054,36 @@ export async function executeJobCore(
     // routing can deliver follow-through in the originating channel/thread.
     // Downstream gateway wiring canonicalizes/guards this key per agent.
     const targetMainSessionKey = job.sessionKey;
-    state.deps.enqueueSystemEvent(text, {
+    const modelOverride =
+      job.payload.kind === "systemEvent" ? job.payload.model : undefined;
+    // Encode model override in contextKey for wakeMode="next-heartbeat" jobs.
+    // For wakeMode="now", model is passed directly via heartbeat config.
+    // Use base64 encoding to preserve case sensitivity of model names since
+    // normalizeContextKey lowercases the entire contextKey string.
+    const contextKey = modelOverride
+      ? `cron:${job.id}:model:${Buffer.from(modelOverride, "utf-8").toString("base64")}`
+      : `cron:${job.id}`;
+    // Await enqueueSystemEvent to ensure any async operations complete before
+    // triggering heartbeat (though currently it's synchronous).
+    await state.deps.enqueueSystemEvent(text, {
       agentId: job.agentId,
       sessionKey: targetMainSessionKey,
-      contextKey: `cron:${job.id}`,
+      contextKey,
+      model: modelOverride,
     });
     if (job.wakeMode === "now" && state.deps.runHeartbeatOnce) {
       const reason = `cron:${job.id}`;
       const maxWaitMs = state.deps.wakeNowHeartbeatBusyMaxWaitMs ?? 2 * 60_000;
       const retryDelayMs = state.deps.wakeNowHeartbeatBusyRetryDelayMs ?? 250;
       const waitStartedAt = state.deps.nowMs();
+
+      // Pass model override to heartbeat if provided. This allows cron jobs
+      // to use a different model than the session default without permanently
+      // modifying the session store.
+      const heartbeatConfig: { target: "last"; model?: string } = { target: "last" };
+      if (modelOverride) {
+        heartbeatConfig.model = modelOverride;
+      }
 
       let heartbeatResult: HeartbeatRunResult;
       for (;;) {
@@ -1078,7 +1098,7 @@ export async function executeJobCore(
           // Without this override, heartbeat target defaults to "none" (since
           // e2362d35) and cron main-session responses are silently swallowed.
           // See: https://github.com/openclaw/openclaw/issues/28508
-          heartbeat: { target: "last" },
+          heartbeat: heartbeatConfig,
         });
         if (
           heartbeatResult.status !== "skipped" ||
